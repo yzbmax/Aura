@@ -1,0 +1,44 @@
+{
+  "forms": [
+    {
+      "name": "widget_focus_2x2",
+      "displayName": "微沙漏 · 当下聚焦",
+      "description": "展示当前进行中的专注时间块与微沙漏",
+      "src": "./ets/widget/pages/FocusCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "isDefault": true,
+      "colorMode": "auto",
+      "supportDimensions": [
+        "2*2"
+      ],
+      "defaultDimension": "2*2",
+      "updateEnabled": true,
+      "scheduledUpdateTime": "10:30",
+      "updateDuration": 1
+    },
+    {
+      "name": "widget_flow_2x4",
+      "displayName": "今日心流节奏轨",
+      "description": "桌面微缩版 Structured 纵向时间轴与留白呼吸",
+      "src": "./ets/widget/pages/TodayFlowCard2x4.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "isDefault": false,
+      "colorMode": "auto",
+      "supportDimensions": [
+        "2*4"
+      ],
+      "defaultDimension": "2*4",
+      "updateEnabled": true,
+      "scheduledUpdateTime": "10:30",
+      "updateDuration": 1
+    }
+  ]
+}

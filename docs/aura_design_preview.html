@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura · 同频 | Soft-Bento 实体触感工作台 (手机端 & 折叠大屏双视口)</title>
+  <style>
+    :root {
+      /* === 暮色深空模式 (Dark Mode) === */
+      --body-bg: #0B0D13;
+      --canvas-bg: #131620;
+      --sidebar-bg: #090B0F;
+      --sidebar-border: rgba(255, 255, 255, 0.08);
+
+      --flow-violet: #9D8DF1;
+      --flow-violet-deep: #6C5CE7;
+      --dawn-cyan: #70A9A1;
+      --rest-sage: #95B8A2;
+      --frost-blue: #8FA2B0;
+
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.2);
+
+      --text-primary: rgba(255, 255, 255, 0.95);
+      --text-secondary: rgba(255, 255, 255, 0.62);
+      --text-tertiary: rgba(255, 255, 255, 0.38);
+
+      --tactile-btn-bg: rgba(255, 255, 255, 0.06);
+      --tactile-btn-shadow: 0 6px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      --tactile-btn-hover: rgba(157, 141, 241, 0.15);
+
+      --grid-dot-color: rgba(255, 255, 255, 0.04);
+      --ai-bubble-user: rgba(157, 141, 241, 0.18);
+      --ai-bubble-bot: rgba(255, 255, 255, 0.06);
+
+      --dock-bg: rgba(15, 17, 24, 0.85);
+      --dock-border: rgba(255, 255, 255, 0.14);
+
+      --device-border: #1C202C;
+    }
+
+    /* === 晨曦羊脂白微晶模式 (Light Mode - 实体柔白触感) === */
+    body.light-theme {
+      --body-bg: #E7EBF0;
+      --canvas-bg: #FFFFFF;
+      --sidebar-bg: #1B1E26; /* 高反差深墨色胶囊侧边栏 */
+      --sidebar-border: rgba(255, 255, 255, 0.08);
+
+      --flow-violet: #6C5CE7;
+      --flow-violet-deep: #5A48D9;
+      --dawn-cyan: #2A8276;
+      --rest-sage: #4E7C5D;
+      --frost-blue: #586B7B;
+
+      --card-bg: #F8FAFD;
+      --card-border: rgba(0, 0, 0, 0.04);
+      --card-shadow: 0 12px 32px rgba(16, 24, 40, 0.05), 0 2px 6px rgba(16, 24, 40, 0.02);
+
+      --text-primary: #171A21;
+      --text-secondary: #5E6778;
+      --text-tertiary: #929DAB;
+
+      --tactile-btn-bg: #F4F6F9;
+      --tactile-btn-shadow: 0 4px 14px rgba(16, 24, 40, 0.06), inset 0 1px 0 #FFFFFF;
+      --tactile-btn-hover: #ECEFF4;
+
+      --grid-dot-color: rgba(0, 0, 0, 0.03);
+      --ai-bubble-user: #ECE9FB;
+      --ai-bubble-bot: #FFFFFF;
+
+      --dock-bg: rgba(255, 255, 255, 0.88);
+      --dock-border: rgba(0, 0, 0, 0.08);
+
+      --device-border: #DDE2EC;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--body-bg);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans", "Helvetica Neue", sans-serif;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 16px;
+      transition: background-color 0.4s ease, color 0.3s ease;
+    }
+
+    /* 统一 1.6px 细线纯净 SVG 矢量图标规范 (严禁 Emoji) */
+    .svg-icon {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .svg-icon.xs { width: 11px; height: 11px; stroke-width: 1.5; }
+    .svg-icon.sm { width: 13px; height: 13px; stroke-width: 1.6; }
+    .svg-icon.lg { width: 22px; height: 22px; stroke-width: 1.8; }
+    .svg-icon.xl { width: 28px; height: 28px; stroke-width: 1.6; }
+
+    /* 顶部控制栏 */
+    .header-bar {
+      max-width: 1060px;
+      width: 100%;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      background: rgba(157, 141, 241, 0.16);
+      color: var(--flow-violet);
+      border: 0.5px solid rgba(157, 141, 241, 0.4);
+      font-weight: 600;
+    }
+
+    /* 设备与模式切换胶囊 */
+    .device-switcher-capsule {
+      display: flex;
+      background: rgba(0, 0, 0, 0.05);
+      border: 0.5px solid var(--card-border);
+      padding: 3px;
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+    }
+    body.light-theme .device-switcher-capsule { background: rgba(0, 0, 0, 0.04); }
+
+    .btn-device-pill {
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      border-radius: 17px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease;
+    }
+
+    .btn-device-pill.active {
+      background: var(--flow-violet);
+      color: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(108, 92, 231, 0.35);
+    }
+
+    .controls-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-control-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 0.5px solid var(--card-border);
+      color: var(--text-primary);
+      padding: 6px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    body.light-theme .btn-control-pill {
+      background: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .btn-control-pill:hover { transform: translateY(-1px); }
+
+    /* 视口切换器：控制手机端与大屏端显隐 */
+    .viewports-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* 科技微点阵底衬 */
+    .precision-grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(var(--grid-dot-color) 1.2px, transparent 1.2px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ========================================================= */
+    /* 视口 1：手机端 Soft-Bento 视口 (Mobile Viewport) */
+    /* ========================================================= */
+    .mobile-phone-viewport {
+      width: 395px;
+      height: 820px;
+      background: var(--canvas-bg);
+      border: 11px solid var(--device-border);
+      border-radius: 46px;
+      box-shadow: 
+        0 24px 70px rgba(0, 0, 0, 0.32),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* 手机端沉浸顶栏 */
+    .mobile-hds-nav {
+      position: relative;
+      z-index: 10;
+      padding: 14px 18px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(20px);
+      border-bottom: 0.5px solid var(--card-border);
+    }
+    body.light-theme .mobile-hds-nav { background: rgba(255, 255, 255, 0.75); }
+
+    .mobile-brand-group {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .mobile-logo-circle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--flow-violet), var(--dawn-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .mobile-brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    .mobile-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mobile-dial-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 0.5px solid var(--card-border);
+      font-size: 10px;
+      font-weight: 600;
+      font-family: monospace;
+      color: var(--dawn-cyan);
+    }
+    body.light-theme .mobile-dial-pill { background: rgba(0, 0, 0, 0.04); }
+
+    /* 手机端纵向滚动主画板 */
+    .mobile-scroll-stage {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px 84px; /* 留出底部 Dock 空间 */
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      z-index: 5;
+      scrollbar-width: none;
+    }
+    .mobile-scroll-stage::-webkit-scrollbar { display: none; }
+
+    /* 手机端大标题与目标进度卡 */
+    .mobile-greeting-title {
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .goal-progress-card {
+      background: var(--card-bg);
+      border: 0.5px solid var(--card-border);
+      border-radius: 20px;
+      padding: 13px 15px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .goal-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .goal-title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .goal-percent-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .goal-ratio-text {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      font-family: monospace;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 7px;
+      border-radius: 3.5px;
+      background: rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+    body:not(.light-theme) .progress-bar-track { background: rgba(255, 255, 255, 0.08); }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 45%;
+      border-radius: 3.5px;
+      background: linear-gradient(90deg, var(--dawn-cyan) 0%, var(--flow-violet) 100%);
+      box-shadow: 0 0 6px rgba(157, 141, 241, 0.45);
+    }
+
+    .goal-action-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--flow-violet), var(--flow-violet-deep));
+      color: #FFFFFF;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(108, 92, 231, 0.4);
+      flex-shrink: 0;
+      transition: all 0.25s ease;
+    }
+    .goal-action-btn:hover { transform: scale(1.06); }
+
+    /* 手机端五大触感圆排按键 */
+    .tactile-buttons-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 2px 0;
+    }
+
+    .tactile-btn-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .tactile-btn-item:hover .tactile-circle {
+      transform: translateY(-2px);
+      border-color: var(--flow-violet);
+      box-shadow: 0 6px 16px rgba(157, 141, 241, 0.25);
+    }
+
+    .tactile-circle {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--tactile-btn-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--tactile-btn-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      transition: all 0.25s ease;
+    }
+
+    .tactile-btn-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.1px;
+    }
+
+    /* 手机端嵌入式 AI 破冰助手卡片 */
+    .ai-companion-card {
+      background: var(--card-bg);
+      border: 0.5px solid var(--card-border);
+      border-radius: 20px;
+      padding: 13px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ai-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ai-badge-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2.5px 8px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(157, 141, 241, 0.20), rgba(112, 169, 161, 0.15));
+      border: 0.5px solid var(--flow-violet);
+      color: var(--flow-violet);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    .ai-time-ago {
+      font-size: 9.5px;
+      color: var(--text-tertiary);
+    }
+
+    .ai-dialog-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .user-bubble {
+      align-self: flex-end;
+      background: var(--ai-bubble-user);
+      border-radius: 12px 12px 2px 12px;
+      padding: 7px 11px;
+      font-size: 11px;
+      color: var(--text-primary);
+      max-width: 90%;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+
+    .bot-bubble-card {
+      align-self: flex-start;
+      background: var(--ai-bubble-bot);
+      border: 0.5px solid var(--card-border);
+      border-radius: 12px 12px 12px 2px;
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      width: 100%;
+    }
+
+    .bot-desc-text {
+      font-size: 10.5px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .micro-metric-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .micro-metric-chip {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 9px;
+      padding: 5px 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      border: 0.5px solid var(--card-border);
+    }
+    body:not(.light-theme) .micro-metric-chip { background: rgba(255, 255, 255, 0.05); }
+
+    .chip-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .chip-title {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .chip-val {
+      font-size: 8.5px;
+      color: var(--text-tertiary);
+    }
+
+    .mini-ring-svg {
+      width: 16px;
+      height: 16px;
+      transform: rotate(-90deg);
+    }
+
+    .ai-input-capsule {
+      height: 34px;
+      border-radius: 17px;
+      background: rgba(0, 0, 0, 0.04);
+      border: 0.5px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+    }
+    body:not(.light-theme) .ai-input-capsule { background: rgba(255, 255, 255, 0.06); }
+
+    .ai-text-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 11px;
+      color: var(--text-primary);
+    }
+    .ai-text-input::placeholder { color: var(--text-tertiary); }
+
+    .btn-mic-send {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(157, 141, 241, 0.15);
+      color: var(--flow-violet);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* 手机端 Bento 仪表盘 */
+    .mobile-bento-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .summary-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .summary-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .segmented-pill-switcher {
+      display: flex;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 2px;
+      border-radius: 14px;
+      border: 0.5px solid var(--card-border);
+    }
+    body:not(.light-theme) .segmented-pill-switcher { background: rgba(255, 255, 255, 0.06); }
+
+    .segment-btn {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      padding: 3px 9px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.2s;
+    }
+
+    .segment-btn.active {
+      background: #FFFFFF;
+      color: #171A21;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    body:not(.light-theme) .segment-btn.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: #FFFFFF;
+    }
+
+    .mobile-bento-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bento-card {
+      background: var(--card-bg);
+      border: 0.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 12px 14px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .bento-card:hover { transform: translateY(-1px); }
+
+    /* Bento 1 同心圆弧 */
+    .concentric-arcs-svg-box {
+      width: 60px;
+      height: 60px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .arc-bg { fill: none; stroke: rgba(0, 0, 0, 0.06); stroke-width: 5; stroke-linecap: round; }
+    body:not(.light-theme) .arc-bg { stroke: rgba(255, 255, 255, 0.08); }
+
+    .arc-violet {
+      fill: none;
+      stroke: var(--flow-violet);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 150;
+      stroke-dashoffset: 58;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    .arc-cyan {
+      fill: none;
+      stroke: var(--dawn-cyan);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 110;
+      stroke-dashoffset: 38;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    .concentric-legend-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .legend-label-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+    .legend-dot.violet { background: var(--flow-violet); }
+    .legend-dot.cyan { background: var(--dawn-cyan); }
+
+    .legend-val {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: monospace;
+    }
+
+    /* Bento 2 音频节律柱 */
+    .bento-bars-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .bars-stat-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .bars-stat-label {
+      font-size: 9.5px;
+      color: var(--text-tertiary);
+    }
+
+    .bars-stat-num {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
+      font-family: monospace;
+    }
+
+    .soundwave-rhythm-matrix {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 38px;
+    }
+
+    .rhythm-column {
+      width: 3.5px;
+      border-radius: 2px;
+      background: var(--text-primary);
+      transition: height 0.3s ease;
+    }
+
+    /* Bento 3 深色反差冷冻舱 */
+    .bento-dark-card {
+      background: #141720 !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      color: #FFFFFF !important;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+    }
+
+    .track-info-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .track-label {
+      font-size: 9.5px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .track-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .track-sub {
+      font-size: 8.5px;
+      color: var(--dawn-cyan);
+      font-weight: 600;
+    }
+
+    .track-contour-svg {
+      width: 68px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    /* ========================================================= */
+    /* 手机端底部 HDS 悬浮胶囊底栏 (Floating Bottom Capsule Dock) */
+    /* ========================================================= */
+    .mobile-floating-dock {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 280px;
+      height: 50px;
+      border-radius: 25px;
+      background: var(--dock-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 0.5px solid var(--dock-border);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      z-index: 20;
+    }
+
+    .dock-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      transition: all 0.2s;
+    }
+
+    .dock-nav-item:hover, .dock-nav-item.active {
+      color: var(--flow-violet);
+    }
+
+    .dock-label {
+      font-size: 9px;
+      font-weight: 600;
+    }
+
+    .dock-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: transparent;
+    }
+    .dock-nav-item.active .dock-dot { background: var(--flow-violet); }
+
+    /* ========================================================= */
+    /* 视口 2：折叠大屏 / 平板工作台 (Tablet / Foldable Workbench) */
+    /* ========================================================= */
+    .bento-workbench-container {
+      width: 1060px;
+      height: 690px;
+      background: var(--canvas-bg);
+      border: 12px solid var(--device-border);
+      border-radius: 46px;
+      box-shadow: 
+        0 28px 70px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      display: flex;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .sidebar-capsule-bar {
+      width: 145px;
+      background: var(--sidebar-bg);
+      border-right: 0.5px solid var(--sidebar-border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 12px 20px;
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .sidebar-top-group { display: flex; flex-direction: column; gap: 18px; }
+    .sidebar-brand-logo { display: flex; align-items: center; gap: 8px; padding: 0 6px; }
+    .logo-circle-icon {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--flow-violet), var(--dawn-cyan));
+      display: flex; align-items: center; justify-content: center; color: #fff;
+    }
+    .logo-text { font-size: 13px; font-weight: 700; color: #FFFFFF; }
+    .sidebar-menu-list { display: flex; flex-direction: column; gap: 6px; }
+    .sidebar-nav-item {
+      display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+      border-radius: 14px; cursor: pointer; font-size: 11.5px; font-weight: 500;
+      color: rgba(255, 255, 255, 0.65); transition: all 0.2s ease;
+    }
+    .sidebar-nav-item:hover { background: rgba(255, 255, 255, 0.08); color: #FFFFFF; }
+    .sidebar-nav-item.active { background: rgba(255, 255, 255, 0.12); color: #FFFFFF; }
+    .nav-icon-badge {
+      width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.08);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sidebar-nav-item.active .nav-icon-badge { background: var(--flow-violet); color: #FFFFFF; }
+
+    .sidebar-bottom-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 0.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px; padding: 12px 10px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .bottom-card-title { font-size: 10px; font-weight: 600; color: #FFFFFF; }
+    .bottom-card-sub { font-size: 9px; color: rgba(255, 255, 255, 0.45); line-height: 1.3; }
+    .btn-sidebar-sunset {
+      margin-top: 4px; height: 26px; border-radius: 13px; background: #FFFFFF;
+      color: #171A21; border: none; font-size: 10.5px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+
+    .bento-main-stage {
+      flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 20px;
+      overflow-y: auto; position: relative; z-index: 5;
+    }
+    .stage-top-section { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 22px; align-items: start; }
+    .hero-action-col { display: flex; flex-direction: column; gap: 16px; }
+    .hero-greeting-title { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; line-height: 1.15; }
+    .stage-bottom-section { display: flex; flex-direction: column; gap: 12px; }
+    .bento-tri-grid { display: grid; grid-template-columns: 1fr 1fr 1.05fr; gap: 16px; }
+
+    /* 18:30 晚间打烊雾帘 */
+    .sunset-veil {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at center, #151322 0%, #0E1015 100%);
+      backdrop-filter: blur(36px); -webkit-backdrop-filter: blur(36px);
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 28px; text-align: center;
+    }
+    .sunset-veil.active { opacity: 1; pointer-events: auto; }
+    .sunset-title { font-size: 24px; font-weight: 700; color: #FFFFFF; margin: 10px 0 6px; }
+    .sunset-stat { font-size: 13px; color: var(--flow-violet); margin-bottom: 24px; }
+    .btn-sunset-close {
+      height: 38px; padding: 0 24px; border-radius: 19px;
+      background: linear-gradient(135deg, rgba(157, 141, 241, 0.4), rgba(112, 169, 161, 0.3));
+      border: 0.5px solid var(--flow-violet); color: #FFFFFF; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部控制条 -->
+  <header class="header-bar">
+    <div class="brand-meta">
+      <span class="brand-name">「Aura · 同频」</span>
+      <span class="brand-badge">Soft-Bento 双视口</span>
+    </div>
+
+    <!-- 视口切换器：手机端 vs 折叠大屏 -->
+    <div class="device-switcher-capsule">
+      <button class="btn-device-pill active" id="btnSwitchMobile">
+        <svg class="svg-icon sm" viewBox="0 0 24 24">
+          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+          <line x1="12" y1="18" x2="12.01" y2="18"></line>
+        </svg>
+        <span>📱 手机端视口</span>
+      </button>
+
+      <button class="btn-device-pill" id="btnSwitchDesktop">
+        <svg class="svg-icon sm" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+        <span>💻 折叠大屏工作台</span>
+      </button>
+    </div>
+
+    <div class="controls-group">
+      <button class="btn-control-pill" id="btnThemeToggle">
+        <span id="themeIconContainer">
+          <svg class="svg-icon sm" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+        </span>
+        <span id="themeText">切换暗夜主题</span>
+      </button>
+
+      <button class="btn-control-pill" id="btnSunsetTrigger">
+        <svg class="svg-icon sm" viewBox="0 0 24 24">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+        <span>18:30 打烊仪式</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 视口展示区 -->
+  <div class="viewports-wrapper">
+
+    <!-- ========================================================= -->
+    <!-- 视口 1：手机端 Soft-Bento 视口 (默认呈现) -->
+    <!-- ========================================================= -->
+    <div class="mobile-phone-viewport" id="mobileViewport">
+      <!-- 亚像素微点阵 -->
+      <div class="precision-grid-overlay"></div>
+
+      <!-- 手机端沉浸微晶顶栏 -->
+      <nav class="mobile-hds-nav">
+        <div class="mobile-brand-group">
+          <div class="mobile-logo-circle">
+            <svg class="svg-icon sm" viewBox="0 0 24 24">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+          <span class="mobile-brand-title">Aura · 今日心流</span>
+        </div>
+
+        <div class="mobile-nav-right">
+          <div class="mobile-dial-pill" title="脑力负荷上限">
+            <svg class="svg-icon xs" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>2.8h / 4.5h</span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- 手机端内容滚动流 -->
+      <div class="mobile-scroll-stage">
+
+        <!-- 激励标题 -->
+        <h1 class="mobile-greeting-title">
+          Let's start<br>strong!
+        </h1>
+
+        <!-- 目标进度卡 -->
+        <div class="goal-progress-card">
+          <div class="goal-text-group">
+            <div class="goal-title-row">
+              <span class="goal-percent-text">今日深度专注达成 45%</span>
+              <span class="goal-ratio-text">(2.8h / 4.5h)</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill"></div>
+            </div>
+          </div>
+          <button class="goal-action-btn goal-mobile-btn" title="启动破冰">
+            <svg class="svg-icon sm" viewBox="0 0 24 24">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 5 大微触感圆排按键 -->
+        <div class="tactile-buttons-row">
+          <div class="tactile-btn-item mobile-btn-item" data-freq="523.25" title="5分钟破冰">
+            <div class="tactile-circle">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </div>
+            <span class="tactile-btn-label">破冰 5m</span>
+          </div>
+
+          <div class="tactile-btn-item mobile-btn-item" data-freq="440.00" title="杂念停泊">
+            <div class="tactile-circle">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="3"></circle>
+                <line x1="12" y1="8" x2="12" y2="22"></line>
+                <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
+              </svg>
+            </div>
+            <span class="tactile-btn-label">杂念停泊</span>
+          </div>
+
+          <div class="tactile-btn-item mobile-btn-item" data-freq="392.00" title="留白透气">
+            <div class="tactile-circle">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                <line x1="6" y1="1" x2="6" y2="4"></line>
+                <line x1="10" y1="1" x2="10" y2="4"></line>
+                <line x1="14" y1="1" x2="14" y2="4"></line>
+              </svg>
+            </div>
+            <span class="tactile-btn-label">留白透气</span>
+          </div>
+
+          <div class="tactile-btn-item mobile-btn-item" data-freq="329.63" title="和弦共鸣">
+            <div class="tactile-circle">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+              </svg>
+            </div>
+            <span class="tactile-btn-label">和弦共鸣</span>
+          </div>
+
+          <div class="tactile-btn-item mobile-btn-item" data-freq="261.63" title="情绪同频">
+            <div class="tactile-circle">
+              <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+              </svg>
+            </div>
+            <span class="tactile-btn-label">情绪同频</span>
+          </div>
+        </div>
+
+        <!-- 手机端嵌入式 AI 破冰卡片 -->
+        <div class="ai-companion-card">
+          <div class="ai-card-header">
+            <div class="ai-badge-pill">
+              <svg class="svg-icon xs" viewBox="0 0 24 24">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span>Aura AI 破冰助手</span>
+            </div>
+            <span class="ai-time-ago">在线同频</span>
+          </div>
+
+          <div class="ai-dialog-body">
+            <div class="user-bubble">
+              “我不想写数据装箱调度器，阻抗太大...”
+            </div>
+
+            <div class="bot-bubble-card">
+              <span class="bot-desc-text">
+                已自动拆解为 <strong>2 个 5 分钟微胶囊</strong>：
+              </span>
+
+              <div class="micro-metric-row">
+                <div class="micro-metric-chip" id="mobileChip1">
+                  <div class="chip-left">
+                    <span class="chip-title">定位调度入口</span>
+                    <span class="chip-val">已完成 1m</span>
+                  </div>
+                  <svg class="mini-ring-svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="3"></circle>
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="var(--dawn-cyan)" stroke-width="3" stroke-dasharray="56" stroke-dashoffset="0"></circle>
+                  </svg>
+                </div>
+
+                <div class="micro-metric-chip" id="mobileChip2">
+                  <div class="chip-left">
+                    <span class="chip-title">编写首个单测</span>
+                    <span class="chip-val">3m 切片</span>
+                  </div>
+                  <svg class="mini-ring-svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="3"></circle>
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="var(--flow-violet)" stroke-width="3" stroke-dasharray="56" stroke-dashoffset="35"></circle>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-input-capsule">
+            <input type="text" class="ai-text-input" id="mobileAiInput" placeholder="闪现杂念？敲回车秒停泊..." />
+            <button class="btn-mic-send" id="btnMobileAiSend">
+              <svg class="svg-icon sm" viewBox="0 0 24 24">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 手机端 Bento 数据全景 -->
+        <div class="mobile-bento-section">
+          <div class="summary-header-row">
+            <h2 class="summary-title">Summary · 心流看板</h2>
+            <div class="segmented-pill-switcher">
+              <button class="segment-btn active">Daily</button>
+              <button class="segment-btn">Weekly</button>
+            </div>
+          </div>
+
+          <div class="mobile-bento-grid">
+            <!-- Bento 1 同心圆弧 -->
+            <div class="bento-card" id="mobileBentoArcs">
+              <div class="concentric-arcs-svg-box">
+                <svg width="60" height="60" viewBox="0 0 72 72">
+                  <circle class="arc-bg" cx="36" cy="36" r="28"></circle>
+                  <circle class="arc-violet" cx="36" cy="36" r="28"></circle>
+                  <circle class="arc-bg" cx="36" cy="36" r="19"></circle>
+                  <circle class="arc-cyan" cx="36" cy="36" r="19"></circle>
+                </svg>
+              </div>
+              <div class="concentric-legend-col">
+                <div class="legend-item">
+                  <div class="legend-label-group"><span class="legend-dot violet"></span><span>深度攻坚</span></div>
+                  <span class="legend-val">240/600m</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-label-group"><span class="legend-dot cyan"></span><span>破冰起步</span></div>
+                  <span class="legend-val">160/600m</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bento 2 音频柱 -->
+            <div class="bento-card" id="mobileBentoBars">
+              <div class="bento-bars-content">
+                <div class="bars-stat-col">
+                  <span class="bars-stat-label">心流节律步数</span>
+                  <span class="bars-stat-num">2,340</span>
+                </div>
+                <div class="soundwave-rhythm-matrix" id="mobileRhythmMatrix">
+                  <div class="rhythm-column" style="height: 12px;"></div>
+                  <div class="rhythm-column" style="height: 20px;"></div>
+                  <div class="rhythm-column" style="height: 32px;"></div>
+                  <div class="rhythm-column" style="height: 16px;"></div>
+                  <div class="rhythm-column" style="height: 36px;"></div>
+                  <div class="rhythm-column" style="height: 24px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bento 3 深黑冷冻舱轨迹 -->
+            <div class="bento-card bento-dark-card" id="mobileBentoTrack">
+              <div class="track-info-col">
+                <span class="track-label">今日心流轨迹 · 冷冻舱</span>
+                <span class="track-val">3.4h 净心流</span>
+                <span class="track-sub">3 项待办休眠 · 0 逾期负疚</span>
+              </div>
+              <svg class="track-contour-svg" viewBox="0 0 80 44">
+                <path d="M 10 32 C 10 18, 25 10, 42 16 C 58 22, 70 8, 70 24 C 70 36, 50 38, 35 34 C 20 30, 10 38, 10 32 Z" 
+                      fill="none" stroke="var(--dawn-cyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 手机端底部 HDS 悬浮胶囊底栏 -->
+      <div class="mobile-floating-dock">
+        <div class="dock-nav-item active">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span class="dock-label">看板</span>
+          <span class="dock-dot"></span>
+        </div>
+
+        <div class="dock-nav-item">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span class="dock-label">时间轴</span>
+          <span class="dock-dot"></span>
+        </div>
+
+        <div class="dock-nav-item">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          <span class="dock-label">洞察</span>
+          <span class="dock-dot"></span>
+        </div>
+
+        <div class="dock-nav-item">
+          <svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line><path d="m20 16-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"></path></svg>
+          <span class="dock-label">冷冻舱</span>
+          <span class="dock-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- 视口 2：折叠大屏 / 平板工作台视口 (Tablet / Foldable Viewport) -->
+    <!-- ========================================================= -->
+    <main class="bento-workbench-container" id="workbenchViewport" style="display: none;">
+      <div class="precision-grid-overlay"></div>
+
+      <!-- 左侧深墨胶囊控制舱 -->
+      <aside class="sidebar-capsule-bar">
+        <div class="sidebar-top-group">
+          <div class="sidebar-brand-logo">
+            <div class="logo-circle-icon">
+              <svg class="svg-icon sm" viewBox="0 0 24 24">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+            <span class="logo-text">Aura</span>
+          </div>
+
+          <nav class="sidebar-menu-list">
+            <div class="sidebar-nav-item active"><div class="nav-icon-badge"><svg class="svg-icon sm" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div><span>看板</span></div>
+            <div class="sidebar-nav-item"><div class="nav-icon-badge"><svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div><span>时间轴</span></div>
+            <div class="sidebar-nav-item"><div class="nav-icon-badge"><svg class="svg-icon sm" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg></div><span>洞察</span></div>
+            <div class="sidebar-nav-item"><div class="nav-icon-badge"><svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line><path d="m20 16-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"></path></svg></div><span>冷冻舱</span></div>
+            <div class="sidebar-nav-item"><div class="nav-icon-badge"><svg class="svg-icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div><span>设置</span></div>
+          </nav>
+        </div>
+
+        <div class="sidebar-bottom-card">
+          <span class="bottom-card-title">晚间打烊 · 18:30</span>
+          <span class="bottom-card-sub">物理关机，免去未完成负罪感</span>
+          <button class="btn-sidebar-sunset" id="btnDeskSunset"><span>进入打烊</span><svg class="svg-icon sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+        </div>
+      </aside>
+
+      <!-- 大屏主画板 -->
+      <section class="bento-main-stage">
+        <div class="stage-top-section">
+          <div class="hero-action-col">
+            <h1 class="hero-greeting-title">Let's start<br>strong!</h1>
+            <div class="goal-progress-card">
+              <div class="goal-text-group">
+                <div class="goal-title-row"><span class="goal-percent-text">今日深度专注达成 45%</span><span class="goal-ratio-text">(2.8h / 4.5h 脑力上限)</span></div>
+                <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
+              </div>
+              <button class="goal-action-btn goal-desktop-btn"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></button>
+            </div>
+
+            <div class="tactile-buttons-row">
+              <div class="tactile-btn-item desk-btn-item" data-freq="523.25"><div class="tactile-circle"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div><span class="tactile-btn-label">破冰 5m</span></div>
+              <div class="tactile-btn-item desk-btn-item" data-freq="440.00"><div class="tactile-circle"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"></circle><line x1="12" y1="8" x2="12" y2="22"></line><path d="M5 12H2a10 10 0 0 0 20 0h-3"></path></svg></div><span class="tactile-btn-label">杂念停泊</span></div>
+              <div class="tactile-btn-item desk-btn-item" data-freq="392.00"><div class="tactile-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg></div><span class="tactile-btn-label">留白透气</span></div>
+              <div class="tactile-btn-item desk-btn-item" data-freq="329.63"><div class="tactile-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></div><span class="tactile-btn-label">和弦共鸣</span></div>
+              <div class="tactile-btn-item desk-btn-item" data-freq="261.63"><div class="tactile-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg></div><span class="tactile-btn-label">情绪同频</span></div>
+            </div>
+          </div>
+
+          <div class="ai-companion-card">
+            <div class="ai-card-header"><div class="ai-badge-pill"><svg class="svg-icon sm" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span>Aura AI 破冰助手</span></div><span class="ai-time-ago">刚刚在线</span></div>
+            <div class="ai-dialog-body"><div class="user-bubble">“我不想写数据装箱调度器，启动阻抗太大了...”</div><div class="bot-bubble-card"><span class="bot-desc-text">已为您自动拆解为 <strong>2 个 5 分钟微胶囊</strong>：</span><div class="micro-metric-row"><div class="micro-metric-chip"><div class="chip-left"><span class="chip-title">定位调度入口</span><span class="chip-val">已完成 1m</span></div><svg class="mini-ring-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="3"></circle><circle cx="12" cy="12" r="9" fill="none" stroke="var(--dawn-cyan)" stroke-width="3" stroke-dasharray="56" stroke-dashoffset="0"></circle></svg></div><div class="micro-metric-chip"><div class="chip-left"><span class="chip-title">编写首个单测</span><span class="chip-val">3m 切片</span></div><svg class="mini-ring-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="3"></circle><circle cx="12" cy="12" r="9" fill="none" stroke="var(--flow-violet)" stroke-width="3" stroke-dasharray="56" stroke-dashoffset="35"></circle></svg></div></div></div></div>
+            <div class="ai-input-capsule"><input type="text" class="ai-text-input" id="deskAiInput" placeholder="闪现杂念？敲回车秒停泊..." /><button class="btn-mic-send" id="btnDeskAiSend"><svg class="svg-icon sm" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button></div>
+          </div>
+        </div>
+
+        <div class="stage-bottom-section">
+          <div class="summary-header-row"><h2 class="summary-title">Summary · 心流全景看板</h2><div class="segmented-pill-switcher"><button class="segment-btn">Daily</button><button class="segment-btn active">Weekly</button><button class="segment-btn">Monthly</button></div></div>
+          <div class="bento-tri-grid">
+            <div class="bento-card" id="deskBentoArcs"><div class="concentric-arcs-svg-box"><svg width="72" height="72" viewBox="0 0 72 72"><circle class="arc-bg" cx="36" cy="36" r="28"></circle><circle class="arc-violet" cx="36" cy="36" r="28"></circle><circle class="arc-bg" cx="36" cy="36" r="19"></circle><circle class="arc-cyan" cx="36" cy="36" r="19"></circle></svg></div><div class="concentric-legend-col"><div class="legend-item"><span class="legend-dot violet"></span><span>深度攻坚</span><span class="legend-val">240/600m</span></div><div class="legend-item"><span class="legend-dot cyan"></span><span>破冰起步</span><span class="legend-val">160/600m</span></div></div></div>
+            <div class="bento-card" id="deskBentoBars"><div class="bento-bars-content"><div class="bars-stat-col"><span class="bars-stat-label">心流节律步数</span><span class="bars-stat-num">2,340</span><span style="font-size: 9.5px; color: var(--dawn-cyan); font-weight: 600;">已成和弦阶梯</span></div><div class="soundwave-rhythm-matrix" id="deskRhythmMatrix"><div class="rhythm-column" style="height: 14px;"></div><div class="rhythm-column" style="height: 22px;"></div><div class="rhythm-column" style="height: 38px;"></div><div class="rhythm-column" style="height: 18px;"></div><div class="rhythm-column" style="height: 44px;"></div><div class="rhythm-column" style="height: 28px;"></div><div class="rhythm-column" style="height: 12px;"></div></div></div></div>
+            <div class="bento-card bento-dark-card" id="deskBentoTrack"><div class="track-info-col"><span class="track-label">今日心流轨迹 · 冷冻舱</span><span class="track-val">3.4h 净心流</span><span class="track-sub">3 项长期待办已休眠 · 0 逾期负疚</span></div><svg class="track-contour-svg" viewBox="0 0 80 44"><path d="M 10 32 C 10 18, 25 10, 42 16 C 58 22, 70 8, 70 24 C 70 36, 50 38, 35 34 C 20 30, 10 38, 10 32 Z" fill="none" stroke="var(--dawn-cyan)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- 18:30 晚间打烊雾帘 -->
+  <div class="sunset-veil" id="sunsetVeil">
+    <svg class="svg-icon xl" viewBox="0 0 24 24" style="stroke: var(--flow-violet);">
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+    </svg>
+    <h2 class="sunset-title">晚间打烊 · 心智物理关机</h2>
+    <div class="sunset-stat">今日累计深度心流 204 分钟 · 舒适无负担</div>
+    <button class="btn-sunset-close" id="btnCloseSunset">完成打烊 · 享受私人时光</button>
+  </div>
+
+  <script>
+    // === 1. Web Audio API 和弦合成器与音波互动 ===
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playTone(freq, duration = 0.3) {
+      try {
+        if (!audioCtx) audioCtx = new AudioCtx();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn('Audio blocked or not supported', e);
+      }
+    }
+
+    // === 2. 纯净双色主题切换 (默认白瓷模式) ===
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const themeIconContainer = document.getElementById('themeIconContainer');
+    const themeText = document.getElementById('themeText');
+    let isLight = true;
+    document.body.classList.add('light-theme');
+
+    const sunSvg = `
+      <svg class="svg-icon sm" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+      </svg>`;
+    const moonSvg = `
+      <svg class="svg-icon sm" viewBox="0 0 24 24">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+      </svg>`;
+
+    btnThemeToggle.addEventListener('click', () => {
+      isLight = !isLight;
+      document.body.classList.toggle('light-theme', isLight);
+      themeIconContainer.innerHTML = isLight ? sunSvg : moonSvg;
+      themeText.textContent = isLight ? '切换暗夜主题' : '切换白色主题';
+      playTone(isLight ? 523.25 : 261.63, 0.2);
+    });
+
+    // === 3. 视口切换器 (手机端 vs 折叠大屏) ===
+    const btnSwitchMobile = document.getElementById('btnSwitchMobile');
+    const btnSwitchDesktop = document.getElementById('btnSwitchDesktop');
+    const mobileViewport = document.getElementById('mobileViewport');
+    const workbenchViewport = document.getElementById('workbenchViewport');
+
+    btnSwitchMobile.addEventListener('click', () => {
+      btnSwitchMobile.classList.add('active');
+      btnSwitchDesktop.classList.remove('active');
+      mobileViewport.style.display = 'flex';
+      workbenchViewport.style.display = 'none';
+      playTone(440, 0.15);
+    });
+
+    btnSwitchDesktop.addEventListener('click', () => {
+      btnSwitchDesktop.classList.add('active');
+      btnSwitchMobile.classList.remove('active');
+      mobileViewport.style.display = 'none';
+      workbenchViewport.style.display = 'flex';
+      playTone(523.25, 0.15);
+    });
+
+    // === 4. 音频节律柱微跳动动画 ===
+    function bounceRhythmBars() {
+      const allRhythmCols = document.querySelectorAll('.rhythm-column');
+      allRhythmCols.forEach(col => {
+        const randH = Math.floor(Math.random() * 26 + 10);
+        col.style.height = `${randH}px`;
+        setTimeout(() => { col.style.height = ''; }, 380);
+      });
+    }
+
+    // === 5. 触感圆形按钮点击反馈 ===
+    document.querySelectorAll('.tactile-btn-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const freq = parseFloat(btn.getAttribute('data-freq')) || 440;
+        playTone(freq, 0.3);
+        bounceRhythmBars();
+      });
+    });
+
+    document.querySelectorAll('.goal-action-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playTone(659.25, 0.35);
+        bounceRhythmBars();
+      });
+    });
+
+    // === 6. AI 助手输入交互 ===
+    function setupAiInput(inputEl, sendBtn) {
+      if (!inputEl || !sendBtn) return;
+      const handleSend = () => {
+        const val = inputEl.value.trim();
+        if (!val) return;
+        playTone(587.33, 0.25);
+        inputEl.value = '';
+        bounceRhythmBars();
+      };
+      inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSend(); });
+      sendBtn.addEventListener('click', handleSend);
+    }
+    setupAiInput(document.getElementById('mobileAiInput'), document.getElementById('btnMobileAiSend'));
+    setupAiInput(document.getElementById('deskAiInput'), document.getElementById('btnDeskAiSend'));
+
+    // === 7. 分段胶囊与底栏 Dock 点击 ===
+    document.querySelectorAll('.segment-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        playTone(392, 0.15);
+      });
+    });
+
+    document.querySelectorAll('.dock-nav-item').forEach(dockItem => {
+      dockItem.addEventListener('click', () => {
+        document.querySelectorAll('.dock-nav-item').forEach(d => d.classList.remove('active'));
+        dockItem.classList.add('active');
+        playTone(493.88, 0.15);
+      });
+    });
+
+    // === 8. 晚间打烊仪式 ===
+    const sunsetVeil = document.getElementById('sunsetVeil');
+    const openSunset = () => { sunsetVeil.classList.add('active'); playTone(196, 0.5); };
+    const closeSunset = () => { sunsetVeil.classList.remove('active'); playTone(392, 0.25); };
+
+    document.getElementById('btnSunsetTrigger').addEventListener('click', openSunset);
+    const btnDeskSunset = document.getElementById('btnDeskSunset');
+    if (btnDeskSunset) btnDeskSunset.addEventListener('click', openSunset);
+    document.getElementById('btnCloseSunset').addEventListener('click', closeSunset);
+
+    // === 9. Bento 卡片点击音效 ===
+    document.querySelectorAll('.bento-card').forEach((card, idx) => {
+      card.addEventListener('click', () => {
+        playTone(329.63 + idx * 60, 0.25);
+        bounceRhythmBars();
+      });
+    });
+  </script>
+</body>
+</html>
